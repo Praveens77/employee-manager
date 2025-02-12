@@ -1,5 +1,5 @@
-import 'package:employee_manager/bloc/model.dart';
-import 'package:employee_manager/common/color.dart';
+import 'package:employee_manager/data/employee_model.dart';
+import 'package:employee_manager/utils/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -35,9 +35,9 @@ Container currentEmpContainer(
         children: [
           customText(usr.name, 16, theme, FontWeight.w500),
           gapH(6),
-          customText(usr.selectedRole, 14, lighttext, FontWeight.w400),
+          customText(usr.role, 14, lighttext, FontWeight.w400),
           gapH(6),
-          customText(usr.presentdate, 14, lighttext, FontWeight.w400),
+          customText(usr.presentDate, 14, lighttext, FontWeight.w400),
         ],
       ),
     ),
@@ -60,16 +60,16 @@ Container previousEmpContainer(
         children: [
           customText(pusr.name, 16, theme, FontWeight.w500),
           gapH(6),
-          customText(pusr.selectedRole, 14, lighttext, FontWeight.w400),
+          customText(pusr.role, 14, lighttext, FontWeight.w400),
           gapH(6),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              customText(pusr.presentdate, 14, lighttext, FontWeight.w400),
+              customText(pusr.presentDate, 14, lighttext, FontWeight.w400),
               gapW(3),
               customText("-", 14, lighttext, FontWeight.w400),
               gapW(3),
-              customText(pusr.enddate, 14, lighttext, FontWeight.w400),
+              customText(pusr.endDate, 14, lighttext, FontWeight.w400),
             ],
           ),
         ],

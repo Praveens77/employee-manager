@@ -1,27 +1,32 @@
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
+
+import 'dart:convert';
+import 'package:employee_manager/bloc/employee_bloc.dart';
+import 'package:employee_manager/data/employee_model.dart';
+import 'package:employee_manager/presentation/components/custom_calendar.dart';
+import 'package:employee_manager/utils/app_colors.dart';
+import 'package:employee_manager/utils/app_images.dart';
+import 'package:employee_manager/utils/common_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:employee_manager/bloc/bloc.dart';
-import 'package:employee_manager/bloc/model.dart';
-import 'package:employee_manager/common/calendar.dart';
-import 'package:employee_manager/common/color.dart';
-import 'package:employee_manager/common/image.dart';
-import 'package:employee_manager/common/widget.dart';
-import 'package:employee_manager/screens/emp_list.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
 
-class EditEmployee extends StatelessWidget {
-  const EditEmployee({super.key, required this.employee, required this.id});
-  final EmployeeModel employee;
-  final String id;
+class AddEmployee extends StatelessWidget {
+  const AddEmployee({super.key});
 
   @override
   Widget build(BuildContext context) {
-    String name = employee.name;
-    String presDate = employee.presentdate;
-    String endDate = employee.enddate;
+    String name = '';
+    String presDate = '';
+    String endDate = '';
     final formKey = GlobalKey<FormState>();
-    final selectedRoleNotifier = ValueNotifier<String>(employee.selectedRole);
+    final uuid = Uuid();
+    final id = uuid.v4();
+    final selectedRoleNotifier = ValueNotifier<String>('');
 
     return BlocBuilder<EmployeeBloc, EmployeeState>(
       builder: (context, state) {
@@ -29,20 +34,8 @@ class EditEmployee extends StatelessWidget {
           appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: theme,
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                customText("Edit Employee Details", 18, white, FontWeight.w500),
-                GestureDetector(
-                  onTap: () {
-                    BlocProvider.of<EmployeeBloc>(context)
-                        .add(DelEmp(employee: employee));
-                    Navigator.pop(context);
-                  },
-                  child: SvgPicture.asset(ImagePath.delete),
-                ),
-              ],
-            ),
+            title:
+                customText("Add Employee Details", 18, white, FontWeight.w500),
           ),
           body: Form(
             key: formKey,
@@ -53,7 +46,7 @@ class EditEmployee extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      editField(
+                      customField(
                         context,
                         "Name",
                         ImagePath.person,
@@ -68,15 +61,16 @@ class EditEmployee extends StatelessWidget {
                       ),
                       gapH(23),
                       ValueListenableBuilder<String>(
-                          valueListenable: selectedRoleNotifier,
-                          builder: (context, selectedRole, _) {
-                            return editField(
-                                context,
-                                "Select role",
-                                ImagePath.work,
-                                lighttext,
-                                true,
-                                ImagePath.dropdown, () {
+                        valueListenable: selectedRoleNotifier,
+                        builder: (context, selectedRole, _) {
+                          return customField(
+                            context,
+                            "Select role",
+                            ImagePath.work,
+                            lighttext,
+                            true,
+                            ImagePath.dropdown,
+                            () {
                               showCustomBottomSheet(context, (selectedRole) {
                                 selectedRoleNotifier.value = selectedRole;
                                 BlocProvider.of<EmployeeBloc>(context)
@@ -87,16 +81,20 @@ class EditEmployee extends StatelessWidget {
                                 "QA Tester",
                                 "Product Owner"
                               ]);
-                            }, (value) {
+                            },
+                            (value) {
                               selectedRole = value;
-                            }, initialValue: selectedRole);
-                          }),
+                            },
+                            initialValue: selectedRole,
+                          );
+                        },
+                      ),
                       gapH(23),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: editField(
+                            child: customField(
                               context,
                               "Today",
                               ImagePath.calendar,
@@ -115,16 +113,6 @@ class EditEmployee extends StatelessWidget {
                               },
                               initialValue: presDate,
                               isDate: true,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a date';
-                                }
-                                if (!RegExp(r'^\d{2}-\d{2}-\d{4}$')
-                                    .hasMatch(value)) {
-                                  return 'Please enter a date in dd-mm-yyyy format';
-                                }
-                                return null;
-                              },
                             ),
                           ),
                           gapW(16),
@@ -134,9 +122,9 @@ class EditEmployee extends StatelessWidget {
                           ),
                           gapW(16),
                           Expanded(
-                            child: editField(
+                            child: customField(
                               context,
-                              "End Date",
+                              "No date",
                               ImagePath.calendar,
                               lighttext,
                               false,
@@ -154,23 +142,6 @@ class EditEmployee extends StatelessWidget {
                               initialValue: endDate,
                               isDate: true,
                               isRequired: false,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content:
-                                          Text('Please fill all the fields.'),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
-                                  return 'Please enter a date';
-                                }
-                                if (!RegExp(r'^\d{2}-\d{2}-\d{4}$')
-                                    .hasMatch(value)) {
-                                  return 'Please enter a date in dd-mm-yyyy format';
-                                }
-                                return null;
-                              },
                             ),
                           ),
                         ],
@@ -186,15 +157,14 @@ class EditEmployee extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      customButton(context, () {
+                      customButton(context, () async {
                         if (name.isEmpty ||
                             presDate.isEmpty ||
                             selectedRoleNotifier.value.isEmpty ||
                             endDate.isNotEmpty &&
                                 DateFormat('dd-MM-yyyy')
                                     .parse(endDate)
-                                    .isBefore(DateFormat('dd-MM-yyyy')
-                                        .parse(presDate))) {
+                                    .isBefore(DateTime.now())) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text(
@@ -204,27 +174,30 @@ class EditEmployee extends StatelessWidget {
                           );
                         } else {
                           if (formKey.currentState!.validate()) {
-                            EmployeeModel updatedEmployee = EmployeeModel(
+                            EmployeeModel newEmployee = EmployeeModel(
                               id: id,
                               name: name,
-                              selectedRole: selectedRoleNotifier.value,
-                              presentdate: presDate,
-                              enddate: endDate,
+                              role: selectedRoleNotifier.value,
+                              presentDate: presDate,
+                              endDate: endDate,
                             );
+
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+                            List<String> employees =
+                                prefs.getStringList('employees') ?? [];
+                            employees.add(json.encode(newEmployee.toJson()));
+                            await prefs.setStringList('employees', employees);
+
                             BlocProvider.of<EmployeeBloc>(context)
-                                .add(EditEmp(employee: updatedEmployee));
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const EmployeeList(),
-                              ),
-                            );
+                                .add(AddEmp(employee: newEmployee));
+                            context.go('/');
                           }
                         }
                       }, "Save", theme, white, 73.0, theme),
                       gapW(16),
                       customButton(context, () {
-                        Navigator.pop(context);
+                        context.go('/');
                       }, "Cancel", lightblue, theme, 73.0, lightblue),
                     ],
                   ),

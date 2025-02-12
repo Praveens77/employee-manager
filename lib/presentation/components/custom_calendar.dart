@@ -1,7 +1,7 @@
-import 'package:employee_manager/bloc/bloc.dart';
-import 'package:employee_manager/common/color.dart';
-import 'package:employee_manager/common/image.dart';
-import 'package:employee_manager/common/widget.dart';
+import 'package:employee_manager/bloc/employee_bloc.dart';
+import 'package:employee_manager/utils/app_colors.dart';
+import 'package:employee_manager/utils/app_images.dart';
+import 'package:employee_manager/utils/common_methods.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
