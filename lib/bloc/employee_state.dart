@@ -1,4 +1,4 @@
-part of 'bloc.dart';
+part of 'employee_bloc.dart';
 
 abstract class EmployeeState {
   List<EmployeeModel> emp;

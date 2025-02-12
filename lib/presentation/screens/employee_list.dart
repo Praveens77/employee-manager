@@ -1,13 +1,13 @@
-import 'package:employee_manager/screens/add_emp.dart';
-import 'package:employee_manager/screens/edit_emp.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:employee_manager/bloc/bloc.dart';
-import 'package:employee_manager/bloc/model.dart';
-import 'package:employee_manager/common/color.dart';
-import 'package:employee_manager/common/image.dart';
-import 'package:employee_manager/common/widget.dart';
+import 'package:employee_manager/bloc/employee_bloc.dart';
+import 'package:employee_manager/data/employee_model.dart';
+import 'package:employee_manager/utils/app_colors.dart';
+import 'package:employee_manager/utils/app_images.dart';
+import 'package:employee_manager/utils/common_methods.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+
 class EmployeeList extends StatelessWidget {
   const EmployeeList({super.key});
 
@@ -23,8 +23,7 @@ class EmployeeList extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         backgroundColor: theme,
         onPressed: () {
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const AddEmployee()));
+          context.go('/add_employee');
         },
         child: Center(child: SvgPicture.asset(ImagePath.plusicon)),
       ),
@@ -34,7 +33,7 @@ class EmployeeList extends StatelessWidget {
             final List<EmployeeModel> currentEmployees = [];
             final List<EmployeeModel> previousEmployees = [];
             for (final employee in state.emp) {
-              if (employee.enddate.isNotEmpty) {
+              if (employee.endDate.isNotEmpty) {
                 previousEmployees.add(employee);
               } else {
                 currentEmployees.add(employee);
@@ -54,14 +53,13 @@ class EmployeeList extends StatelessWidget {
                       final employee = currentEmployees[index];
                       return GestureDetector(
                         onTap: () {
-                          Navigator.push(
+                          Navigator.pushNamed(
                             context,
-                            MaterialPageRoute(
-                              builder: (context) => EditEmployee(
-                                employee: employee,
-                                id: employee.id,
-                              ),
-                            ),
+                            '/edit_employee',
+                            arguments: {
+                              'id': employee.id,
+                              'employee': employee
+                            },
                           );
                         },
                         child: Dismissible(
@@ -134,13 +132,8 @@ class EmployeeList extends StatelessWidget {
                       final employee = previousEmployees[index];
                       return GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => EditEmployee(
-                                  employee: employee, id: employee.id),
-                            ),
-                          );
+                          context.go('/edit_employee/${employee.id}',
+                              extra: {'employee': employee});
                         },
                         child: Dismissible(
                           key: UniqueKey(),

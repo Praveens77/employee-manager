@@ -1,11 +1,11 @@
-import 'package:employee_manager/bloc/model.dart';
+import 'package:employee_manager/data/employee_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-part 'event.dart';
-part 'state.dart';
+part 'employee_event.dart';
+part 'employee_state.dart';
 
 class EmployeeBloc extends Bloc<EmployeeEvent, EmployeeState> {
   DateTime selectedDate = DateTime.now();
