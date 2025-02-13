@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:employee_manager/bloc/employee_bloc.dart';
 import 'package:employee_manager/utils/app_colors.dart';
 import 'package:employee_manager/utils/app_images.dart';
@@ -11,7 +13,7 @@ import 'package:intl/intl.dart';
 class TodayCalendar extends StatefulWidget {
   final Function(DateTime) onSelectDate;
 
-  const TodayCalendar({Key? key, required this.onSelectDate}) : super(key: key);
+  const TodayCalendar({super.key, required this.onSelectDate});
 
   @override
   _TodayCalendarState createState() => _TodayCalendarState();
@@ -84,7 +86,7 @@ class _TodayCalendarState extends State<TodayCalendar> {
                   "After 1 week",
                   () {
                     setState(() {
-                      _selectedDate = DateTime.now().add(Duration(days: 7));
+                      _selectedDate = DateTime.now().add(const Duration(days: 7));
                     });
                     widget.onSelectDate(_selectedDate);
                   },
@@ -110,7 +112,7 @@ class _TodayCalendarState extends State<TodayCalendar> {
               ),
             ),
             gapH(11),
-            const Divider(color: divider),
+            const Divider(color: background),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -131,7 +133,7 @@ class _TodayCalendarState extends State<TodayCalendar> {
                 Expanded(
                   child: customButton(context, () {
                     Navigator.pop(context);
-                  }, "Cancel", lightblue, theme, 73.0, lightblue),
+                  }, "Cancel", lightBlue, theme, 73.0, lightBlue),
                 ),
                 gapW(16),
                 Expanded(
@@ -169,7 +171,7 @@ class _TodayCalendarState extends State<TodayCalendar> {
         height: MediaQuery.of(context).size.height / 20,
         width: MediaQuery.of(context).size.width / 3.2,
         decoration: BoxDecoration(
-          color: isSelected ? lightblue : theme,
+          color: isSelected ? lightBlue : theme,
           borderRadius: BorderRadius.circular(4.0),
         ),
         child: Center(
@@ -195,7 +197,7 @@ class _TodayCalendarState extends State<TodayCalendar> {
       case "Next Tuesday":
         return selectedDate.weekday == DateTime.tuesday;
       case "After 1 week":
-        final nextWeek = DateTime.now().add(Duration(days: 7));
+        final nextWeek = DateTime.now().add(const Duration(days: 7));
         return _isSameDay(selectedDate, nextWeek);
       default:
         return false;
@@ -220,8 +222,8 @@ class TableCal extends StatefulWidget {
     required this.onDaySelected,
     required this.onSelectDate,
     required this.onDateSelected,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   _TableCalState createState() => _TableCalState();
@@ -281,7 +283,7 @@ class _TableCalState extends State<TableCal> {
           widget.onSelectDate(selectedDate);
         },
         calendarStyle: CalendarStyle(
-          selectedDecoration: BoxDecoration(
+          selectedDecoration: const BoxDecoration(
             shape: BoxShape.circle,
             color: theme,
           ),
@@ -290,7 +292,7 @@ class _TableCalState extends State<TableCal> {
             shape: BoxShape.circle,
             color: white,
           ),
-          todayTextStyle: TextStyle(color: theme),
+          todayTextStyle: const TextStyle(color: theme),
         ),
       ),
     );
@@ -324,10 +326,10 @@ class EndDateCalendar extends StatefulWidget {
   final DateTime currentDate;
 
   const EndDateCalendar({
-    Key? key,
+    super.key,
     required this.onSelectDate,
     required this.currentDate,
-  }) : super(key: key);
+  });
 
   @override
   _EndDateCalendarState createState() => _EndDateCalendarState();
@@ -404,7 +406,7 @@ class _EndDateCalendarState extends State<EndDateCalendar> {
                 // Do something with the selected date
               },
             ),
-            const Divider(color: divider),
+            const Divider(color: background),
             gapH(11),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -426,7 +428,7 @@ class _EndDateCalendarState extends State<EndDateCalendar> {
                 Expanded(
                   child: customButton(context, () {
                     Navigator.pop(context);
-                  }, "Cancel", lightblue, theme, 73.0, lightblue),
+                  }, "Cancel", lightBlue, theme, 73.0, lightBlue),
                 ),
                 gapW(16),
                 Expanded(
@@ -459,14 +461,14 @@ class _EndDateCalendarState extends State<EndDateCalendar> {
         height: MediaQuery.of(context).size.height / 20,
         width: MediaQuery.of(context).size.width / 3.2,
         decoration: BoxDecoration(
-          color: isSelected ? lightblue : white,
+          color: isSelected ? lightBlue : white,
           borderRadius: BorderRadius.circular(4.0),
         ),
         child: Center(
           child: Text(
             text,
             style: TextStyle(
-              color: isSelected ? theme : lightblue,
+              color: isSelected ? theme : lightBlue,
               fontWeight: FontWeight.w500,
               fontSize: 14,
             ),
@@ -486,11 +488,5 @@ class _EndDateCalendarState extends State<EndDateCalendar> {
         return false;
     }
   }
-}
-
-bool _isSameDay(DateTime date1, DateTime date2) {
-  return date1.year == date2.year &&
-      date1.month == date2.month &&
-      date1.day == date2.day;
 }
 
