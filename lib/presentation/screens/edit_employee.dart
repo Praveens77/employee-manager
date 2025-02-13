@@ -26,6 +26,7 @@ class EditEmployee extends StatelessWidget {
     return BlocBuilder<EmployeeBloc, EmployeeState>(
       builder: (context, state) {
         return Scaffold(
+          backgroundColor: white,
           appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: theme,
@@ -35,9 +36,80 @@ class EditEmployee extends StatelessWidget {
                 customText("Edit Employee Details", 18, white, FontWeight.w500),
                 GestureDetector(
                   onTap: () {
-                    BlocProvider.of<EmployeeBloc>(context)
-                        .add(DelEmp(employee: employee));
-                    Navigator.pop(context);
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext dialogContext) {
+                        return AlertDialog(
+                          backgroundColor: white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          title: customText(
+                              "Confirm Deletion", 18, black, FontWeight.w500),
+                          content: regularText(
+                              "Are you sure you want to delete this employee?",
+                              15,
+                              black,
+                              FontWeight.w400),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(dialogContext).pop();
+                              },
+                              child: customText(
+                                  "Cancel", 16, theme, FontWeight.w400),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(dialogContext).pop();
+                                BlocProvider.of<EmployeeBloc>(context)
+                                    .add(DelEmp(employee: employee));
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        customText(
+                                            "Employee data has been deleted",
+                                            15,
+                                            white,
+                                            FontWeight.w400),
+                                        GestureDetector(
+                                          onTap: () {
+                                            if (ModalRoute.of(context) !=
+                                                null) {
+                                              BlocProvider.of<EmployeeBloc>(
+                                                      context)
+                                                  .add(UndoDeleteEmp(
+                                                      employee: employee));
+                                              ScaffoldMessenger.of(context)
+                                                  .hideCurrentSnackBar();
+                                            } else {
+                                              debugPrint(
+                                                  'Cannot perform action: Widget context is deactivated.');
+                                            }
+                                          },
+                                          child: customText("Undo", 15, theme,
+                                              FontWeight.w400),
+                                        ),
+                                      ],
+                                    ),
+                                    backgroundColor: black,
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+
+                                context.go('/');
+                              },
+                              child: customText(
+                                  "Confirm", 16, red, FontWeight.w400),
+                            ),
+                          ],
+                        );
+                      },
+                    );
                   },
                   child: SvgPicture.asset(ImagePath.delete),
                 ),
@@ -57,7 +129,7 @@ class EditEmployee extends StatelessWidget {
                         context,
                         "Name",
                         ImagePath.person,
-                        lighttext,
+                        lightText,
                         false,
                         null,
                         null,
@@ -74,7 +146,7 @@ class EditEmployee extends StatelessWidget {
                                 context,
                                 "Select role",
                                 ImagePath.work,
-                                lighttext,
+                                lightText,
                                 true,
                                 ImagePath.dropdown, () {
                               showCustomBottomSheet(context, (selectedRole) {
@@ -100,7 +172,7 @@ class EditEmployee extends StatelessWidget {
                               context,
                               "Today",
                               ImagePath.calendar,
-                              lighttext,
+                              lightText,
                               false,
                               null,
                               () {
@@ -138,7 +210,7 @@ class EditEmployee extends StatelessWidget {
                               context,
                               "End Date",
                               ImagePath.calendar,
-                              lighttext,
+                              lightText,
                               false,
                               null,
                               () {
@@ -157,10 +229,13 @@ class EditEmployee extends StatelessWidget {
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content:
-                                          Text('Please fill all the fields.'),
-                                      duration: Duration(seconds: 2),
+                                    SnackBar(
+                                      content: customText(
+                                          'Please fill all the fields.',
+                                          15,
+                                          white,
+                                          FontWeight.w400),
+                                      duration: const Duration(seconds: 2),
                                     ),
                                   );
                                   return 'Please enter a date';
@@ -179,13 +254,17 @@ class EditEmployee extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                const Divider(color: divider),
+                const Divider(thickness: 2, color: background),
                 gapH(5),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      customButton(context, () {
+                        context.go('/');
+                      }, "Cancel", lightBlue, theme, 73.0, lightBlue),
+                      gapW(16),
                       customButton(context, () {
                         if (name.isEmpty ||
                             presDate.isEmpty ||
@@ -196,10 +275,13 @@ class EditEmployee extends StatelessWidget {
                                     .isBefore(DateFormat('dd-MM-yyyy')
                                         .parse(presDate))) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Please fill all required fields and ensure the end date is not smaller than the present date.'),
-                              duration: Duration(seconds: 2),
+                            SnackBar(
+                              content: customText(
+                                  'Please fill all required fields and ensure the end date is not smaller than the present date.',
+                                  15,
+                                  white,
+                                  FontWeight.w400),
+                              duration: const Duration(seconds: 2),
                             ),
                           );
                         } else {
@@ -213,14 +295,10 @@ class EditEmployee extends StatelessWidget {
                             );
                             BlocProvider.of<EmployeeBloc>(context)
                                 .add(EditEmp(employee: updatedEmployee));
-                            Navigator.pushNamed(context, '/');
+                            context.go('/');
                           }
                         }
                       }, "Save", theme, white, 73.0, theme),
-                      gapW(16),
-                      customButton(context, () {
-                        context.go('/');
-                      }, "Cancel", lightblue, theme, 73.0, lightblue),
                     ],
                   ),
                 ),

@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:employee_manager/bloc/employee_bloc.dart';
 import 'package:employee_manager/utils/app_colors.dart';
 import 'package:employee_manager/utils/app_images.dart';
@@ -11,7 +13,7 @@ import 'package:intl/intl.dart';
 class TodayCalendar extends StatefulWidget {
   final Function(DateTime?) onSelectDate;
 
-  const TodayCalendar({Key? key, required this.onSelectDate}) : super(key: key);
+  const TodayCalendar({super.key, required this.onSelectDate});
 
   @override
   _TodayCalendarState createState() => _TodayCalendarState();
@@ -95,7 +97,7 @@ class _TodayCalendarState extends State<TodayCalendar> {
               ),
             ),
             gapH(11),
-            const Divider(color: divider),
+            const Divider(color: background),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -118,7 +120,7 @@ class _TodayCalendarState extends State<TodayCalendar> {
                 Expanded(
                   child: customButton(context, () {
                     Navigator.pop(context);
-                  }, "Cancel", lightblue, theme, 73.0, lightblue),
+                  }, "Cancel", lightBlue, theme, 73.0, lightBlue),
                 ),
                 gapW(16),
                 Expanded(
@@ -171,7 +173,7 @@ class _TodayCalendarState extends State<TodayCalendar> {
         height: MediaQuery.of(context).size.height / 20,
         width: MediaQuery.of(context).size.width / 3.2,
         decoration: BoxDecoration(
-          color: isSelected ? theme : lightblue,
+          color: isSelected ? theme : lightBlue,
           borderRadius: BorderRadius.circular(4.0),
         ),
         child: Center(
@@ -228,8 +230,8 @@ class TableCal extends StatefulWidget {
     required this.onDaySelected,
     required this.onSelectDate,
     required this.onDateSelected,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   _TableCalState createState() => _TableCalState();
@@ -339,10 +341,10 @@ class EndDateCalendar extends StatefulWidget {
   final DateTime currentDate;
 
   const EndDateCalendar({
-    Key? key,
+    super.key,
     required this.onSelectDate,
     required this.currentDate,
-  }) : super(key: key);
+  });
 
   @override
   _EndDateCalendarState createState() => _EndDateCalendarState();
@@ -410,7 +412,7 @@ class _EndDateCalendarState extends State<EndDateCalendar> {
                 // Do something with the selected date
               },
             ),
-            const Divider(color: divider),
+            const Divider(color: background),
             gapH(11),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -434,7 +436,7 @@ class _EndDateCalendarState extends State<EndDateCalendar> {
                 Expanded(
                   child: customButton(context, () {
                     Navigator.pop(context);
-                  }, "Cancel", lightblue, theme, 73.0, lightblue),
+                  }, "Cancel", lightBlue, theme, 73.0, lightBlue),
                 ),
                 gapW(16),
                 Expanded(
@@ -479,7 +481,7 @@ class _EndDateCalendarState extends State<EndDateCalendar> {
         height: MediaQuery.of(context).size.height / 20,
         width: MediaQuery.of(context).size.width / 3.2,
         decoration: BoxDecoration(
-          color: isSelected ? theme : lightblue,
+          color: isSelected ? theme : lightBlue,
           borderRadius: BorderRadius.circular(4.0),
         ),
         child: Center(

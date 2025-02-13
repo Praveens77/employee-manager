@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:employee_manager/bloc/employee_bloc.dart';
 import 'package:employee_manager/data/employee_model.dart';
 import 'package:employee_manager/presentation/components/custom_calendar.dart';
+import 'package:employee_manager/presentation/components/custom_calendar/custom_calendar.dart';
 import 'package:employee_manager/utils/app_colors.dart';
 import 'package:employee_manager/utils/app_images.dart';
 import 'package:employee_manager/utils/common_methods.dart';
@@ -31,6 +32,7 @@ class AddEmployee extends StatelessWidget {
     return BlocBuilder<EmployeeBloc, EmployeeState>(
       builder: (context, state) {
         return Scaffold(
+          backgroundColor: white,
           appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: theme,
@@ -50,7 +52,7 @@ class AddEmployee extends StatelessWidget {
                         context,
                         "Name",
                         ImagePath.person,
-                        lighttext,
+                        lightText,
                         false,
                         null,
                         null,
@@ -67,7 +69,7 @@ class AddEmployee extends StatelessWidget {
                             context,
                             "Select role",
                             ImagePath.work,
-                            lighttext,
+                            lightText,
                             true,
                             ImagePath.dropdown,
                             () {
@@ -98,15 +100,26 @@ class AddEmployee extends StatelessWidget {
                               context,
                               "Today",
                               ImagePath.calendar,
-                              lighttext,
+                              lightText,
                               false,
                               null,
                               () {
-                                showCalendarPopup(context, false,
-                                    (selectedDate) {
-                                  presDate = DateFormat('dd-MM-yyyy')
-                                      .format(selectedDate!);
-                                });
+                                // showCalendarPopup(context, false,
+                                //     (selectedDate) {
+                                //   presDate = DateFormat('dd-MM-yyyy')
+                                //       .format(selectedDate!);
+                                // });
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => CustomCalendar(
+                                      isFromPicker: true,
+                                      isToPicker: false,
+                                      disablePreviousDates: true,
+                                      onSelectDate: (selectedDate) {
+                                        presDate = DateFormat('dd-MM-yyyy')
+                                            .format(selectedDate!);
+                                      }),
+                                );
                               },
                               (value) {
                                 presDate = value;
@@ -126,7 +139,7 @@ class AddEmployee extends StatelessWidget {
                               context,
                               "No date",
                               ImagePath.calendar,
-                              lighttext,
+                              lightText,
                               false,
                               null,
                               () {
@@ -150,13 +163,17 @@ class AddEmployee extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                const Divider(color: divider),
+                const Divider(thickness: 2, color: background),
                 gapH(5),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      customButton(context, () {
+                        context.go('/');
+                      }, "Cancel", lightBlue, theme, 73.0, lightBlue),
+                      gapW(16),
                       customButton(context, () async {
                         if (name.isEmpty ||
                             presDate.isEmpty ||
@@ -166,9 +183,12 @@ class AddEmployee extends StatelessWidget {
                                     .parse(endDate)
                                     .isBefore(DateTime.now())) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Please fill all required fields and ensure the end date is not smaller than the present date.'),
+                            SnackBar(
+                              content: customText(
+                                  'Please fill all required fields and ensure the end date is not smaller than the present date.',
+                                  15,
+                                  white,
+                                  FontWeight.w400),
                               duration: Duration(seconds: 2),
                             ),
                           );
@@ -195,10 +215,6 @@ class AddEmployee extends StatelessWidget {
                           }
                         }
                       }, "Save", theme, white, 73.0, theme),
-                      gapW(16),
-                      customButton(context, () {
-                        context.go('/');
-                      }, "Cancel", lightblue, theme, 73.0, lightblue),
                     ],
                   ),
                 ),

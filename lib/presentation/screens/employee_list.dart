@@ -20,12 +20,25 @@ class EmployeeList extends StatelessWidget {
         backgroundColor: theme,
         title: customText("Employee List", 18, white, FontWeight.w500),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: theme,
-        onPressed: () {
-          context.go('/add_employee');
-        },
-        child: Center(child: SvgPicture.asset(ImagePath.plusicon)),
+      floatingActionButton: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          color: theme,
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8.0),
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            onTap: () {
+              context.go('/add_employee');
+            },
+            child: Center(child: SvgPicture.asset(ImagePath.plusicon)),
+          ),
+        ),
       ),
       body: BlocBuilder<EmployeeBloc, EmployeeState>(
         builder: (context, state) {
@@ -44,7 +57,7 @@ class EmployeeList extends StatelessWidget {
               children: [
                 Visibility(
                   visible: currentEmployees.isNotEmpty,
-                  child: textContainer(context, "Current employee"),
+                  child: textContainer(context, "Current employees"),
                 ),
                 Expanded(
                   child: ListView.builder(
@@ -53,18 +66,12 @@ class EmployeeList extends StatelessWidget {
                       final employee = currentEmployees[index];
                       return GestureDetector(
                         onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            '/edit_employee',
-                            arguments: {
-                              'id': employee.id,
-                              'employee': employee
-                            },
-                          );
+                          context.go('/edit_employee/${employee.id}',
+                              extra: {'employee': employee});
                         },
                         child: Dismissible(
                           key: UniqueKey(),
-                          direction: DismissDirection.horizontal,
+                          direction: DismissDirection.endToStart,
                           onDismissed: (direction) {
                             BlocProvider.of<EmployeeBloc>(context)
                                 .add(DelEmp(employee: employee));
@@ -75,7 +82,7 @@ class EmployeeList extends StatelessWidget {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     customText("Employee data has been deleted",
-                                        14, white, FontWeight.w500),
+                                        15, white, FontWeight.w400),
                                     GestureDetector(
                                       onTap: () {
                                         if (ModalRoute.of(context) != null) {
@@ -90,7 +97,7 @@ class EmployeeList extends StatelessWidget {
                                         }
                                       },
                                       child: customText(
-                                          "Undo", 14, theme, FontWeight.w500),
+                                          "Undo", 15, theme, FontWeight.w400),
                                     ),
                                   ],
                                 ),
@@ -115,15 +122,16 @@ class EmployeeList extends StatelessWidget {
                               child: SvgPicture.asset(ImagePath.delete),
                             ),
                           ),
-                          child: currentEmpContainer(context, employee),
+                          child: currentEmployeeTab(context, employee),
                         ),
                       );
                     },
                   ),
                 ),
+                
                 Visibility(
                   visible: previousEmployees.isNotEmpty,
-                  child: textContainer(context, "Previous employee"),
+                  child: textContainer(context, "Previous employees"),
                 ),
                 Expanded(
                   child: ListView.builder(
@@ -137,7 +145,7 @@ class EmployeeList extends StatelessWidget {
                         },
                         child: Dismissible(
                           key: UniqueKey(),
-                          direction: DismissDirection.horizontal,
+                          direction: DismissDirection.endToStart,
                           onDismissed: (direction) {
                             BlocProvider.of<EmployeeBloc>(context)
                                 .add(DelEmp(employee: employee));
@@ -148,7 +156,7 @@ class EmployeeList extends StatelessWidget {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     customText("Employee data has been deleted",
-                                        16, white, FontWeight.w500),
+                                        15, white, FontWeight.w400),
                                     GestureDetector(
                                       onTap: () {
                                         if (ModalRoute.of(context) != null) {
@@ -164,7 +172,7 @@ class EmployeeList extends StatelessWidget {
                                         }
                                       },
                                       child: customText(
-                                          "Undo", 16, theme, FontWeight.w500),
+                                          "Undo", 15, theme, FontWeight.w400),
                                     ),
                                   ],
                                 ),
@@ -189,12 +197,13 @@ class EmployeeList extends StatelessWidget {
                               child: SvgPicture.asset(ImagePath.delete),
                             ),
                           ),
-                          child: previousEmpContainer(context, employee),
+                          child: previousEmployeeTab(context, employee),
                         ),
                       );
                     },
                   ),
                 ),
+                instructionBox(context, "Swipe left to delete")
               ],
             );
           } else {

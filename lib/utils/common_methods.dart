@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 
 Text customText(String txt, double size, Color clr, FontWeight weight) {
   return Text(
@@ -13,31 +14,67 @@ Text customText(String txt, double size, Color clr, FontWeight weight) {
   );
 }
 
+Text regularText(String txt, double size, Color clr, FontWeight weight) {
+  return Text(
+    txt,
+    style: TextStyle(
+        color: clr,
+        fontSize: size,
+        fontWeight: weight,
+        fontFamily: "Roboto-Regular"),
+  );
+}
+
 //screen size
 SizedBox gapH(double value) => SizedBox(height: value);
 SizedBox gapW(double value) => SizedBox(width: value);
 screenHeight(BuildContext context) => MediaQuery.of(context).size.height;
 screenWidth(BuildContext context) => MediaQuery.of(context).size.width;
 
+// format current employee date
+String formatEmployeeDate(String date) {
+  try {
+    DateTime parsedDate = DateFormat("dd-MM-yyyy").parse(date);
+    return DateFormat("dd MMM, yyyy").format(parsedDate);
+  } catch (e) {
+    return date;
+  }
+}
+
+String formatEditDate(String date) {
+  try {
+    DateTime parsedDate = DateFormat("dd-MM-yyyy").parse(date);
+    return DateFormat("dd MMM yyyy").format(parsedDate);
+  } catch (e) {
+    return date;
+  }
+}
+
 //current employee container
-Container currentEmpContainer(
+Container currentEmployeeTab(
   BuildContext context,
-  EmployeeModel usr,
+  EmployeeModel employee,
 ) {
   return Container(
     height: 110,
     width: screenWidth(context),
-    decoration: BoxDecoration(color: white, border: Border.all(color: divider)),
+    decoration: const BoxDecoration(
+      color: white,
+      border: Border(
+        bottom: BorderSide(color: background),
+      ),
+    ),
     child: Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          customText(usr.name, 16, theme, FontWeight.w500),
+          customText(employee.name, 16, black, FontWeight.w500),
           gapH(6),
-          customText(usr.role, 14, lighttext, FontWeight.w400),
+          regularText(employee.role, 14, lightText, FontWeight.w400),
           gapH(6),
-          customText(usr.presentDate, 14, lighttext, FontWeight.w400),
+          regularText("From ${formatEmployeeDate(employee.presentDate)}", 12,
+              lightText, FontWeight.w400),
         ],
       ),
     ),
@@ -45,31 +82,38 @@ Container currentEmpContainer(
 }
 
 // previous employee
-Container previousEmpContainer(
+Container previousEmployeeTab(
   BuildContext context,
-  EmployeeModel pusr,
+  EmployeeModel employee,
 ) {
   return Container(
     height: 110,
     width: screenWidth(context),
-    decoration: BoxDecoration(color: white, border: Border.all(color: divider)),
+    decoration: const BoxDecoration(
+      color: white,
+      border: Border(
+        bottom: BorderSide(color: background),
+      ),
+    ),
     child: Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          customText(pusr.name, 16, theme, FontWeight.w500),
+          customText(employee.name, 16, black, FontWeight.w500),
           gapH(6),
-          customText(pusr.role, 14, lighttext, FontWeight.w400),
+          regularText(employee.role, 14, lightText, FontWeight.w400),
           gapH(6),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              customText(pusr.presentDate, 14, lighttext, FontWeight.w400),
+              regularText(formatEmployeeDate(employee.presentDate), 12,
+                  lightText, FontWeight.w400),
               gapW(3),
-              customText("-", 14, lighttext, FontWeight.w400),
+              regularText("-", 12, lightText, FontWeight.w400),
               gapW(3),
-              customText(pusr.endDate, 14, lighttext, FontWeight.w400),
+              regularText(formatEmployeeDate(employee.endDate), 12, lightText,
+                  FontWeight.w400),
             ],
           ),
         ],
@@ -82,11 +126,24 @@ Container previousEmpContainer(
 Container textContainer(BuildContext context, txt) {
   return Container(
     height: 56,
-    width: MediaQuery.of(context).size.height,
+    width: screenWidth(context),
     color: container,
     child: Padding(
       padding: const EdgeInsets.all(16),
       child: customText(txt, 16, theme, FontWeight.w500),
+    ),
+  );
+}
+
+//text container
+Container instructionBox(BuildContext context, txt) {
+  return Container(
+    height: 66,
+    width: screenWidth(context),
+    color: container,
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: customText(txt, 15, lightText, FontWeight.w400),
     ),
   );
 }
@@ -106,15 +163,24 @@ TextFormField customField(
   String? Function(String?)? validator,
   bool isRequired = true,
   bool isDate = false,
-  void Function(String)? onSelected,
 }) {
   controller ??= TextEditingController(text: initialValue);
-  if (initialValue != null) {
-    controller.text = initialValue;
-  }
+  
+  // Format the initial value if it's a date
+  String displayValue = isDate && initialValue != null
+      ? formatEditDate(initialValue) 
+      : initialValue ?? "";
 
   return TextFormField(
     controller: controller,
+    style: const TextStyle(
+      color: Colors.black,
+      fontSize: 16,
+      fontWeight: FontWeight.w400,
+      fontFamily: "Roboto-Regular",
+    ),
+    readOnly: isDate, // Prevent manual editing for dates
+    onTap: isDate ? clk : null, // Trigger date picker on tap
     decoration: InputDecoration(
       contentPadding: const EdgeInsets.symmetric(vertical: 7.0),
       filled: true,
@@ -122,9 +188,7 @@ TextFormField customField(
       hintText: txt,
       prefixIcon: GestureDetector(
         onTap: () {
-          if (clk != null) {
-            clk();
-          }
+          if (clk != null) clk();
         },
         child: Padding(
           padding: const EdgeInsets.all(12.5),
@@ -135,41 +199,31 @@ TextFormField customField(
           ? GestureDetector(
               onTap: clk,
               child: Padding(
-                padding: const EdgeInsets.all(15.5),
+                padding: const EdgeInsets.all(16.5),
                 child: SvgPicture.asset(sufimag!),
               ),
             )
           : null,
-      hintStyle: TextStyle(color: clr, fontSize: 16, fontFamily: 'Roboto'),
+      hintStyle: TextStyle(color: clr, fontSize: 16, fontFamily: 'Roboto-Regular'),
       border: const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(4)),
-        borderSide: BorderSide(
-          color: Colors.grey,
-        ),
+        borderSide: BorderSide(color: Colors.grey),
       ),
       enabledBorder: const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(4)),
-        borderSide: BorderSide(
-          color: Colors.grey,
-        ),
+        borderSide: BorderSide(color: Colors.grey),
       ),
     ),
-    onChanged: onChanged,
-    validator: (value) {
-      if (isRequired && (validator != null)) {
-        return validator(value);
+    onChanged: (value) {
+      if (isDate) {
+        onChanged(initialValue!);
+      } else {
+        onChanged(value);
       }
-      return null;
     },
-    inputFormatters: isDate
-        ? [
-            FilteringTextInputFormatter.deny(RegExp(r'[^0-9-]')),
-            LengthLimitingTextInputFormatter(10),
-            DateInputFormatter(),
-          ]
-        : null,
-  );
+  )..controller?.text = isDate ? displayValue : controller.text; 
 }
+
 
 //edit textfiled
 TextFormField editField(
@@ -187,8 +241,21 @@ TextFormField editField(
   bool isDate = false,
 }) {
   TextEditingController controller = TextEditingController(text: initialValue);
+
+  String displayValue = isDate && initialValue != null
+      ? formatEditDate(initialValue) 
+      : initialValue ?? "";
+
   return TextFormField(
     controller: controller,
+    style: const TextStyle(
+      color: Colors.black,
+      fontSize: 16,
+      fontWeight: FontWeight.w400,
+      fontFamily: "Roboto-Regular",
+    ),
+    readOnly: isDate, 
+    onTap: isDate ? clk : null, 
     decoration: InputDecoration(
       contentPadding: const EdgeInsets.symmetric(vertical: 7.0),
       filled: true,
@@ -196,9 +263,7 @@ TextFormField editField(
       hintText: txt,
       prefixIcon: GestureDetector(
         onTap: () {
-          if (clk != null) {
-            clk();
-          }
+          if (clk != null) clk();
         },
         child: Padding(
           padding: const EdgeInsets.all(15.5),
@@ -209,40 +274,29 @@ TextFormField editField(
           ? GestureDetector(
               onTap: clk,
               child: Padding(
-                padding: const EdgeInsets.all(15.5),
+                padding: const EdgeInsets.all(16.5),
                 child: SvgPicture.asset(sufimag!),
               ),
             )
           : null,
-      hintStyle: TextStyle(color: clr, fontSize: 16, fontFamily: 'Roboto'),
+      hintStyle: TextStyle(color: clr, fontSize: 16, fontFamily: 'Roboto-Regular'),
       border: const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(4)),
-        borderSide: BorderSide(
-          color: Colors.grey,
-        ),
+        borderSide: BorderSide(color: Colors.grey),
       ),
       enabledBorder: const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(4)),
-        borderSide: BorderSide(
-          color: Colors.grey,
-        ),
+        borderSide: BorderSide(color: Colors.grey),
       ),
     ),
-    onChanged: onChanged,
-    validator: (value) {
-      if (isRequired && (validator != null)) {
-        return validator(value);
+    onChanged: (value) {
+      if (isDate) {
+        onChanged(initialValue!);
+      } else {
+        onChanged(value);
       }
-      return null;
     },
-    inputFormatters: isDate
-        ? [
-            FilteringTextInputFormatter.deny(RegExp(r'[^0-9-]')),
-            LengthLimitingTextInputFormatter(10),
-            DateInputFormatter(),
-          ]
-        : null,
-  );
+  )..controller?.text = isDate ? displayValue : controller.text; 
 }
 
 // Formatter to ensure the date format is dd-mm-yyyy
@@ -307,43 +361,46 @@ void showCustomBottomSheet(
               topRight: Radius.circular(16),
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: roles
-                .map((role) {
-                  return Column(
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          onSelectRole(role);
-                          Navigator.pop(context);
-                        },
-                        child: Container(
-                          height: 52,
-                          width: screenWidth(context),
-                          decoration: const BoxDecoration(
-                            color: white,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(16),
-                              topRight: Radius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: roles
+                  .map((role) {
+                    return Column(
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            onSelectRole(role);
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            height: 52,
+                            width: screenWidth(context),
+                            decoration: const BoxDecoration(
+                              color: white,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
+                              ),
                             ),
-                          ),
-                          child: Center(
-                            child: customText(
-                              role,
-                              16,
-                              black,
-                              FontWeight.w400,
+                            child: Center(
+                              child: regularText(
+                                role,
+                                16,
+                                black,
+                                FontWeight.w400,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const Divider(color: divider),
-                    ],
-                  );
-                })
-                .expand((element) => [element, gapH(1)])
-                .toList(),
+                        const Divider(color: background),
+                      ],
+                    );
+                  })
+                  .expand((element) => [element, gapH(1)])
+                  .toList(),
+            ),
           ),
         ),
       );
