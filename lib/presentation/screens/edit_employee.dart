@@ -1,9 +1,9 @@
+import 'package:employee_manager/presentation/components/custom_calendar/custom_calendar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:employee_manager/bloc/employee_bloc.dart';
 import 'package:employee_manager/data/employee_model.dart';
-import 'package:employee_manager/presentation/components/custom_calendar.dart';
 import 'package:employee_manager/utils/app_colors.dart';
 import 'package:employee_manager/utils/app_images.dart';
 import 'package:employee_manager/utils/common_methods.dart';
@@ -18,10 +18,11 @@ class EditEmployee extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String name = employee.name;
-    String presDate = employee.presentDate;
-    String endDate = employee.endDate;
     final formKey = GlobalKey<FormState>();
     final selectedRoleNotifier = ValueNotifier<String>(employee.role);
+    final presDateNotifier = ValueNotifier<String>(employee.presentDate);
+    final endDateNotifier = ValueNotifier<String>(employee.endDate);
+    final isNoDateSelected = ValueNotifier<bool>(false);
 
     return BlocBuilder<EmployeeBloc, EmployeeState>(
       builder: (context, state) {
@@ -64,43 +65,6 @@ class EditEmployee extends StatelessWidget {
                                 Navigator.of(dialogContext).pop();
                                 BlocProvider.of<EmployeeBloc>(context)
                                     .add(DelEmp(employee: employee));
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        customText(
-                                            "Employee data has been deleted",
-                                            15,
-                                            white,
-                                            FontWeight.w400),
-                                        GestureDetector(
-                                          onTap: () {
-                                            if (ModalRoute.of(context) !=
-                                                null) {
-                                              BlocProvider.of<EmployeeBloc>(
-                                                      context)
-                                                  .add(UndoDeleteEmp(
-                                                      employee: employee));
-                                              ScaffoldMessenger.of(context)
-                                                  .hideCurrentSnackBar();
-                                            } else {
-                                              debugPrint(
-                                                  'Cannot perform action: Widget context is deactivated.');
-                                            }
-                                          },
-                                          child: customText("Undo", 15, theme,
-                                              FontWeight.w400),
-                                        ),
-                                      ],
-                                    ),
-                                    backgroundColor: black,
-                                    duration: const Duration(seconds: 2),
-                                  ),
-                                );
-
                                 context.go('/');
                               },
                               child: customText(
@@ -140,15 +104,16 @@ class EditEmployee extends StatelessWidget {
                       ),
                       gapH(23),
                       ValueListenableBuilder<String>(
-                          valueListenable: selectedRoleNotifier,
-                          builder: (context, selectedRole, _) {
-                            return editField(
-                                context,
-                                "Select role",
-                                ImagePath.work,
-                                lightText,
-                                true,
-                                ImagePath.dropdown, () {
+                        valueListenable: selectedRoleNotifier,
+                        builder: (context, selectedRole, _) {
+                          return editField(
+                            context,
+                            "Select role",
+                            ImagePath.work,
+                            lightText,
+                            true,
+                            ImagePath.dropdown,
+                            () {
                               showCustomBottomSheet(context, (selectedRole) {
                                 selectedRoleNotifier.value = selectedRole;
                                 BlocProvider.of<EmployeeBloc>(context)
@@ -157,45 +122,54 @@ class EditEmployee extends StatelessWidget {
                                 "Product Designer",
                                 "Flutter Developer",
                                 "QA Tester",
-                                "Product Owner"
+                                "Product Owner",
+                                "Team Lead"
                               ]);
-                            }, (value) {
+                            },
+                            (value) {
                               selectedRole = value;
-                            }, initialValue: selectedRole);
-                          }),
+                            },
+                            initialValue: selectedRole,
+                            disabled: true,
+                          );
+                        },
+                      ),
                       gapH(23),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: editField(
-                              context,
-                              "Today",
-                              ImagePath.calendar,
-                              lightText,
-                              false,
-                              null,
-                              () {
-                                showCalendarPopup(context, false,
-                                    (selectedDate) {
-                                  presDate = DateFormat('dd-MM-yyyy')
-                                      .format(selectedDate!);
-                                });
-                              },
-                              (value) {
-                                presDate = value;
-                              },
-                              initialValue: presDate,
-                              isDate: true,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a date';
-                                }
-                                if (!RegExp(r'^\d{2}-\d{2}-\d{4}$')
-                                    .hasMatch(value)) {
-                                  return 'Please enter a date in dd-mm-yyyy format';
-                                }
-                                return null;
+                            child: ValueListenableBuilder<String>(
+                              valueListenable: presDateNotifier,
+                              builder: (context, presDate, _) {
+                                return editField(
+                                  context,
+                                  "Today",
+                                  ImagePath.calendar,
+                                  lightText,
+                                  false,
+                                  null,
+                                  () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => CustomCalendar(
+                                        isFromPicker: true,
+                                        isToPicker: false,
+                                        disablePreviousDates: false,
+                                        onSelectDate: (selectedDate) {
+                                          if (selectedDate != null) {
+                                            presDateNotifier.value =
+                                                DateFormat('dd-MM-yyyy')
+                                                    .format(selectedDate);
+                                          }
+                                        },
+                                      ),
+                                    );
+                                  },
+                                  (value) {},
+                                  initialValue: presDate,
+                                  isDate: true,
+                                );
                               },
                             ),
                           ),
@@ -206,45 +180,48 @@ class EditEmployee extends StatelessWidget {
                           ),
                           gapW(16),
                           Expanded(
-                            child: editField(
-                              context,
-                              "End Date",
-                              ImagePath.calendar,
-                              lightText,
-                              false,
-                              null,
-                              () {
-                                showCalendarPopup(context, true,
-                                    (selectedDate) {
-                                  endDate = DateFormat('dd-MM-yyyy')
-                                      .format(selectedDate!);
-                                });
-                              },
-                              (value) {
-                                endDate = value;
-                              },
-                              initialValue: endDate,
-                              isDate: true,
-                              isRequired: false,
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: customText(
-                                          'Please fill all the fields.',
-                                          15,
-                                          white,
-                                          FontWeight.w400),
-                                      duration: const Duration(seconds: 2),
-                                    ),
-                                  );
-                                  return 'Please enter a date';
-                                }
-                                if (!RegExp(r'^\d{2}-\d{2}-\d{4}$')
-                                    .hasMatch(value)) {
-                                  return 'Please enter a date in dd-mm-yyyy format';
-                                }
-                                return null;
+                            child: ValueListenableBuilder<String>(
+                              valueListenable: endDateNotifier,
+                              builder: (context, endDate, _) {
+                                return ValueListenableBuilder<bool>(
+                                  valueListenable: isNoDateSelected,
+                                  builder: (context, noDate, _) {
+                                    return editField(
+                                      context,
+                                      noDate ? "No date" : "Select Date",
+                                      ImagePath.calendar,
+                                      lightText,
+                                      false,
+                                      null,
+                                      () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => CustomCalendar(
+                                            isFromPicker: false,
+                                            isToPicker: true,
+                                            disablePreviousDates: true,
+                                            onSelectDate: (selectedDate) {
+                                              if (selectedDate == null) {
+                                                isNoDateSelected.value = true;
+                                                endDateNotifier.value = "";
+                                              } else {
+                                                isNoDateSelected.value = false;
+                                                endDateNotifier.value =
+                                                    DateFormat('dd-MM-yyyy')
+                                                        .format(selectedDate);
+                                              }
+                                            },
+                                          ),
+                                        );
+                                      },
+                                      (value) {},
+                                      initialValue:
+                                          noDate ? "No date" : endDate,
+                                      isDate: true,
+                                      isRequired: false,
+                                    );
+                                  },
+                                );
                               },
                             ),
                           ),
@@ -266,37 +243,33 @@ class EditEmployee extends StatelessWidget {
                       }, "Cancel", lightBlue, theme, 73.0, lightBlue),
                       gapW(16),
                       customButton(context, () {
-                        if (name.isEmpty ||
-                            presDate.isEmpty ||
-                            selectedRoleNotifier.value.isEmpty ||
-                            endDate.isNotEmpty &&
-                                DateFormat('dd-MM-yyyy')
-                                    .parse(endDate)
-                                    .isBefore(DateFormat('dd-MM-yyyy')
-                                        .parse(presDate))) {
+                        if (endDateNotifier.value.isNotEmpty &&
+                            DateFormat('dd-MM-yyyy')
+                                .parse(endDateNotifier.value)
+                                .isBefore(DateFormat('dd-MM-yyyy')
+                                    .parse(presDateNotifier.value))) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: customText(
-                                  'Please fill all required fields and ensure the end date is not smaller than the present date.',
+                                  "End date must be after the present date.",
                                   15,
                                   white,
                                   FontWeight.w400),
-                              duration: const Duration(seconds: 2),
                             ),
                           );
-                        } else {
-                          if (formKey.currentState!.validate()) {
-                            EmployeeModel updatedEmployee = EmployeeModel(
-                              id: id,
-                              name: name,
-                              role: selectedRoleNotifier.value,
-                              presentDate: presDate,
-                              endDate: endDate,
-                            );
-                            BlocProvider.of<EmployeeBloc>(context)
-                                .add(EditEmp(employee: updatedEmployee));
-                            context.go('/');
-                          }
+                          return;
+                        }
+                        if (formKey.currentState!.validate()) {
+                          EmployeeModel updatedEmployee = EmployeeModel(
+                            id: id,
+                            name: name,
+                            role: selectedRoleNotifier.value,
+                            presentDate: presDateNotifier.value,
+                            endDate: endDateNotifier.value,
+                          );
+                          BlocProvider.of<EmployeeBloc>(context)
+                              .add(EditEmp(employee: updatedEmployee));
+                          context.go('/');
                         }
                       }, "Save", theme, white, 73.0, theme),
                     ],

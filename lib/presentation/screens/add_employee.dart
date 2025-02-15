@@ -1,9 +1,8 @@
-// ignore_for_file: prefer_const_constructors, use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously
 
 import 'dart:convert';
 import 'package:employee_manager/bloc/employee_bloc.dart';
 import 'package:employee_manager/data/employee_model.dart';
-import 'package:employee_manager/presentation/components/custom_calendar.dart';
 import 'package:employee_manager/presentation/components/custom_calendar/custom_calendar.dart';
 import 'package:employee_manager/utils/app_colors.dart';
 import 'package:employee_manager/utils/app_images.dart';
@@ -22,12 +21,13 @@ class AddEmployee extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String name = '';
-    String presDate = '';
-    String endDate = '';
     final formKey = GlobalKey<FormState>();
-    final uuid = Uuid();
+    const uuid = Uuid();
     final id = uuid.v4();
     final selectedRoleNotifier = ValueNotifier<String>('');
+    final presDateNotifier = ValueNotifier<String>('');
+    final endDateNotifier = ValueNotifier<String>('');
+    final isNoDateSelected = ValueNotifier<bool>(false);
 
     return BlocBuilder<EmployeeBloc, EmployeeState>(
       builder: (context, state) {
@@ -81,13 +81,15 @@ class AddEmployee extends StatelessWidget {
                                 "Product Designer",
                                 "Flutter Developer",
                                 "QA Tester",
-                                "Product Owner"
+                                "Product Owner",
+                                "Team Lead"
                               ]);
                             },
                             (value) {
                               selectedRole = value;
                             },
                             initialValue: selectedRole,
+                            disabled: true,
                           );
                         },
                       ),
@@ -96,36 +98,38 @@ class AddEmployee extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Expanded(
-                            child: customField(
-                              context,
-                              "Today",
-                              ImagePath.calendar,
-                              lightText,
-                              false,
-                              null,
-                              () {
-                                // showCalendarPopup(context, false,
-                                //     (selectedDate) {
-                                //   presDate = DateFormat('dd-MM-yyyy')
-                                //       .format(selectedDate!);
-                                // });
-                                showDialog(
-                                  context: context,
-                                  builder: (context) => CustomCalendar(
-                                      isFromPicker: true,
-                                      isToPicker: false,
-                                      disablePreviousDates: true,
-                                      onSelectDate: (selectedDate) {
-                                        presDate = DateFormat('dd-MM-yyyy')
-                                            .format(selectedDate!);
-                                      }),
+                            child: ValueListenableBuilder<String>(
+                              valueListenable: presDateNotifier,
+                              builder: (context, presDate, _) {
+                                return customField(
+                                  context,
+                                  "Today",
+                                  ImagePath.calendar,
+                                  lightText,
+                                  false,
+                                  null,
+                                  () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => CustomCalendar(
+                                        isFromPicker: true,
+                                        isToPicker: false,
+                                        disablePreviousDates: false,
+                                        onSelectDate: (selectedDate) {
+                                          if (selectedDate != null) {
+                                            presDateNotifier.value =
+                                                DateFormat('dd-MM-yyyy')
+                                                    .format(selectedDate);
+                                          }
+                                        },
+                                      ),
+                                    );
+                                  },
+                                  (value) {},
+                                  initialValue: presDate,
+                                  isDate: true,
                                 );
                               },
-                              (value) {
-                                presDate = value;
-                              },
-                              initialValue: presDate,
-                              isDate: true,
                             ),
                           ),
                           gapW(16),
@@ -135,26 +139,49 @@ class AddEmployee extends StatelessWidget {
                           ),
                           gapW(16),
                           Expanded(
-                            child: customField(
-                              context,
-                              "No date",
-                              ImagePath.calendar,
-                              lightText,
-                              false,
-                              null,
-                              () {
-                                showCalendarPopup(context, true,
-                                    (selectedDate) {
-                                  endDate = DateFormat('dd-MM-yyyy')
-                                      .format(selectedDate!);
-                                });
+                            child: ValueListenableBuilder<String>(
+                              valueListenable: endDateNotifier,
+                              builder: (context, endDate, _) {
+                                return ValueListenableBuilder<bool>(
+                                  valueListenable: isNoDateSelected,
+                                  builder: (context, noDate, _) {
+                                    return customField(
+                                      context,
+                                      noDate ? "No date" : "Select Date",
+                                      ImagePath.calendar,
+                                      lightText,
+                                      false,
+                                      null,
+                                      () {
+                                        showDialog(
+                                          context: context,
+                                          builder: (context) => CustomCalendar(
+                                            isFromPicker: false,
+                                            isToPicker: true,
+                                            disablePreviousDates: false,
+                                            onSelectDate: (selectedDate) {
+                                              if (selectedDate == null) {
+                                                isNoDateSelected.value = true;
+                                                endDateNotifier.value = "";
+                                              } else {
+                                                isNoDateSelected.value = false;
+                                                endDateNotifier.value =
+                                                    DateFormat('dd-MM-yyyy')
+                                                        .format(selectedDate);
+                                              }
+                                            },
+                                          ),
+                                        );
+                                      },
+                                      (value) {},
+                                      initialValue:
+                                          noDate ? "No date" : endDate,
+                                      isDate: true,
+                                      isRequired: false,
+                                    );
+                                  },
+                                );
                               },
-                              (value) {
-                                endDate = value;
-                              },
-                              initialValue: endDate,
-                              isDate: true,
-                              isRequired: false,
                             ),
                           ),
                         ],
@@ -175,21 +202,25 @@ class AddEmployee extends StatelessWidget {
                       }, "Cancel", lightBlue, theme, 73.0, lightBlue),
                       gapW(16),
                       customButton(context, () async {
+                        final presDate = presDateNotifier.value;
+                        final endDate = endDateNotifier.value;
+
                         if (name.isEmpty ||
                             presDate.isEmpty ||
                             selectedRoleNotifier.value.isEmpty ||
-                            endDate.isNotEmpty &&
+                            (endDate.isNotEmpty &&
                                 DateFormat('dd-MM-yyyy')
                                     .parse(endDate)
-                                    .isBefore(DateTime.now())) {
+                                    .isBefore(DateFormat('dd-MM-yyyy')
+                                        .parse(presDate)))) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: customText(
-                                  'Please fill all required fields and ensure the end date is not smaller than the present date.',
+                                  'Please fill all required fields and ensure the end date is after the present date.',
                                   15,
                                   white,
                                   FontWeight.w400),
-                              duration: Duration(seconds: 2),
+                              duration: const Duration(seconds: 2),
                             ),
                           );
                         } else {

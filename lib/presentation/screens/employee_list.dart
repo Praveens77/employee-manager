@@ -13,6 +13,7 @@ class EmployeeList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final employeeBloc = context.read<EmployeeBloc>();
     return Scaffold(
       backgroundColor: white,
       appBar: AppBar(
@@ -73,8 +74,8 @@ class EmployeeList extends StatelessWidget {
                           key: UniqueKey(),
                           direction: DismissDirection.endToStart,
                           onDismissed: (direction) {
-                            BlocProvider.of<EmployeeBloc>(context)
-                                .add(DelEmp(employee: employee));
+                            employeeBloc.add(DelEmp(employee: employee));
+
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Row(
@@ -85,16 +86,10 @@ class EmployeeList extends StatelessWidget {
                                         15, white, FontWeight.w400),
                                     GestureDetector(
                                       onTap: () {
-                                        if (ModalRoute.of(context) != null) {
-                                          BlocProvider.of<EmployeeBloc>(context)
-                                              .add(UndoDeleteEmp(
-                                                  employee: employee));
-                                          ScaffoldMessenger.of(context)
-                                              .hideCurrentSnackBar();
-                                        } else {
-                                          debugPrint(
-                                              'Cannot perform action: Widget context is deactivated.');
-                                        }
+                                        employeeBloc.add(
+                                            UndoDeleteEmp(employee: employee));
+                                        ScaffoldMessenger.of(context)
+                                            .hideCurrentSnackBar();
                                       },
                                       child: customText(
                                           "Undo", 15, theme, FontWeight.w400),
@@ -128,7 +123,6 @@ class EmployeeList extends StatelessWidget {
                     },
                   ),
                 ),
-                
                 Visibility(
                   visible: previousEmployees.isNotEmpty,
                   child: textContainer(context, "Previous employees"),
@@ -147,8 +141,7 @@ class EmployeeList extends StatelessWidget {
                           key: UniqueKey(),
                           direction: DismissDirection.endToStart,
                           onDismissed: (direction) {
-                            BlocProvider.of<EmployeeBloc>(context)
-                                .add(DelEmp(employee: employee));
+                            employeeBloc.add(DelEmp(employee: employee));
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Row(
@@ -159,17 +152,10 @@ class EmployeeList extends StatelessWidget {
                                         15, white, FontWeight.w400),
                                     GestureDetector(
                                       onTap: () {
-                                        if (ModalRoute.of(context) != null) {
-                                          BlocProvider.of<EmployeeBloc>(context)
-                                              .add(UndoDeleteEmp(
-                                                  employee: employee));
-                                          ScaffoldMessenger.of(context)
-                                              .hideCurrentSnackBar();
-                                        } else {
-                                          // ignore: avoid_print
-                                          print(
-                                              'Cannot perform action: Widget context is deactivated.');
-                                        }
+                                        employeeBloc.add(
+                                            UndoDeleteEmp(employee: employee));
+                                        ScaffoldMessenger.of(context)
+                                            .hideCurrentSnackBar();
                                       },
                                       child: customText(
                                           "Undo", 15, theme, FontWeight.w400),
