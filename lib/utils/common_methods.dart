@@ -10,7 +10,13 @@ Text customText(String txt, double size, Color clr, FontWeight weight) {
   return Text(
     txt,
     style: TextStyle(
-        color: clr, fontSize: size, fontWeight: weight, fontFamily: "Roboto"),
+      color: clr,
+      fontSize: size,
+      fontWeight: weight,
+      fontFamily: "Roboto",
+    ),
+    overflow: TextOverflow.ellipsis,
+    maxLines: 1,
   );
 }
 
@@ -163,12 +169,13 @@ TextFormField customField(
   String? Function(String?)? validator,
   bool isRequired = true,
   bool isDate = false,
+  bool disabled = false,
 }) {
   controller ??= TextEditingController(text: initialValue);
-  
+
   // Format the initial value if it's a date
   String displayValue = isDate && initialValue != null
-      ? formatEditDate(initialValue) 
+      ? formatEditDate(initialValue)
       : initialValue ?? "";
 
   return TextFormField(
@@ -179,8 +186,8 @@ TextFormField customField(
       fontWeight: FontWeight.w400,
       fontFamily: "Roboto-Regular",
     ),
-    readOnly: isDate, // Prevent manual editing for dates
-    onTap: isDate ? clk : null, // Trigger date picker on tap
+    readOnly: isDate || disabled,
+    onTap: isDate || disabled ? clk : null,
     decoration: InputDecoration(
       contentPadding: const EdgeInsets.symmetric(vertical: 7.0),
       filled: true,
@@ -204,7 +211,8 @@ TextFormField customField(
               ),
             )
           : null,
-      hintStyle: TextStyle(color: clr, fontSize: 16, fontFamily: 'Roboto-Regular'),
+      hintStyle:
+          TextStyle(color: clr, fontSize: 16, fontFamily: 'Roboto-Regular'),
       border: const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(4)),
         borderSide: BorderSide(color: Colors.grey),
@@ -221,9 +229,8 @@ TextFormField customField(
         onChanged(value);
       }
     },
-  )..controller?.text = isDate ? displayValue : controller.text; 
+  )..controller?.text = isDate ? displayValue : controller.text;
 }
-
 
 //edit textfiled
 TextFormField editField(
@@ -239,11 +246,12 @@ TextFormField editField(
   String? Function(String?)? validator,
   bool isRequired = true,
   bool isDate = false,
+  bool disabled = false,
 }) {
   TextEditingController controller = TextEditingController(text: initialValue);
 
   String displayValue = isDate && initialValue != null
-      ? formatEditDate(initialValue) 
+      ? formatEditDate(initialValue)
       : initialValue ?? "";
 
   return TextFormField(
@@ -254,8 +262,8 @@ TextFormField editField(
       fontWeight: FontWeight.w400,
       fontFamily: "Roboto-Regular",
     ),
-    readOnly: isDate, 
-    onTap: isDate ? clk : null, 
+    readOnly: isDate || disabled,
+    onTap: isDate || disabled ? clk : null,
     decoration: InputDecoration(
       contentPadding: const EdgeInsets.symmetric(vertical: 7.0),
       filled: true,
@@ -279,7 +287,8 @@ TextFormField editField(
               ),
             )
           : null,
-      hintStyle: TextStyle(color: clr, fontSize: 16, fontFamily: 'Roboto-Regular'),
+      hintStyle:
+          TextStyle(color: clr, fontSize: 16, fontFamily: 'Roboto-Regular'),
       border: const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(4)),
         borderSide: BorderSide(color: Colors.grey),
@@ -296,7 +305,7 @@ TextFormField editField(
         onChanged(value);
       }
     },
-  )..controller?.text = isDate ? displayValue : controller.text; 
+  )..controller?.text = isDate ? displayValue : controller.text;
 }
 
 // Formatter to ensure the date format is dd-mm-yyyy
